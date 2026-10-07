@@ -73,11 +73,14 @@ class _PrototypePageState extends State<PrototypePage>
     if (state == AppLifecycleState.resumed) _refresh();
   }
 
-  Future<bool> _change(void Function(StoryState) command) async {
+  Future<bool> _change(
+    void Function(StoryState) command, {
+    DateTime? at,
+  }) async {
     if (busy || repository == null) return false;
     setState(() => busy = true);
     try {
-      await repository!.update(now, command);
+      await repository!.update(at ?? now, command);
       if (mounted) setState(() {});
       return true;
     } catch (e) {
@@ -261,6 +264,8 @@ class _PrototypePageState extends State<PrototypePage>
                 Text(
                   today?.legacy == true
                       ? 'Already completed and paid in the previous version.'
+                      : data.settledDay(now)
+                      ? 'This pay period is settled. Work entries are locked.'
                       : 'Full completion earns 8 simulated hours. Partial work earns proportional credit.',
                 ),
                 if (today?.reason.isNotEmpty == true)
@@ -273,6 +278,7 @@ class _PrototypePageState extends State<PrototypePage>
                     FilledButton(
                       onPressed:
                           busy ||
+                              data.settledDay(now) ||
                               today?.legacy == true ||
                               today?.minutes == data.targetMinutes
                           ? null
@@ -286,6 +292,7 @@ class _PrototypePageState extends State<PrototypePage>
                     OutlinedButton(
                       onPressed:
                           busy ||
+                              data.settledDay(now) ||
                               today?.legacy == true ||
                               today?.minutes == data.targetMinutes
                           ? null
@@ -615,18 +622,30 @@ class _PrototypePageState extends State<PrototypePage>
   }
 
   Future<void> _record() async {
+    final openedDay = dateKey(now);
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
       builder: (_) => WorkDialog(
         target: data.targetMinutes,
-        previous: data.entry(dateKey(now)),
+        previous: data.entry(openedDay),
       ),
     );
     if (result == null || !mounted) return;
-    await _change((s) => s.record(now, result['minutes'], result['note'], ''));
+    final submittedAt = now;
+    await _change(
+      (s) => s.record(
+        submittedAt,
+        result['minutes'],
+        result['note'],
+        '',
+        expectedDay: openedDay,
+      ),
+      at: submittedAt,
+    );
   }
 
   Future<void> _callIn() async {
+    final openedDay = dateKey(now);
     final reason = await showDialog<String>(
       context: context,
       builder: (c) => SimpleDialog(
@@ -654,10 +673,17 @@ class _PrototypePageState extends State<PrototypePage>
       ),
     );
     if (reason == null || !mounted) return;
+    final submittedAt = now;
     await _change((s) {
-      final old = s.entry(dateKey(now));
-      s.record(now, old?.minutes ?? 0, old?.note ?? '', reason);
-    });
+      final old = s.entry(openedDay);
+      s.record(
+        submittedAt,
+        old?.minutes ?? 0,
+        old?.note ?? '',
+        reason,
+        expectedDay: openedDay,
+      );
+    }, at: submittedAt);
   }
 
   Future<void> _avatar() async {

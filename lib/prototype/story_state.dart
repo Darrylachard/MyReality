@@ -330,10 +330,34 @@ class StoryState {
     }
   }
 
-  void record(DateTime now, int minutes, String note, String reason) {
+  bool settledDay(DateTime date) {
+    final key = dateKey(date);
+    return stubs.any(
+      (p) =>
+          key.compareTo(p.periodStart) >= 0 && key.compareTo(p.periodEnd) <= 0,
+    );
+  }
+
+  void record(
+    DateTime now,
+    int minutes,
+    String note,
+    String reason, {
+    String? expectedDay,
+  }) {
     final d = dateOnly(now), key = dateKey(now);
+    if (expectedDay != null && key != expectedDay) {
+      throw StateError(
+        'The date changed. Reopen the form for today before saving.',
+      );
+    }
     if (!scheduled(d)) {
       throw StateError('Work can only be recorded on a scheduled day');
+    }
+    if (settledDay(d)) {
+      throw StateError(
+        'This workday belongs to a settled pay period and is locked',
+      );
     }
     final previous = entry(key);
     if (previous?.legacy == true) {
