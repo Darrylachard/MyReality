@@ -59,6 +59,10 @@ void main() {
       );
       expect(saved.pendingGross, 6880);
       expect(saved.checking, 0);
+      expect(find.text('Solid Progress'), findsWidgets);
+      expect(find.text(r'+$68.80 pending gross'), findsOneWidget);
+      await tester.tap(find.text('Done'));
+      await settleUi(tester);
       await tester.tap(find.text('Account'));
       await settleUi(tester);
       expect(find.text(r'$68.80'), findsOneWidget);

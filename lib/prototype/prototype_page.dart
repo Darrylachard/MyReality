@@ -10,6 +10,8 @@ import '../Avatar/avatar_widget.dart';
 import 'story_repository.dart';
 import 'story_state.dart';
 import 'pay_statement_sheet.dart';
+import 'daily_progress.dart';
+import 'daily_recap_dialog.dart';
 
 String dollars(int cents) =>
     NumberFormat.currency(symbol: r'$', decimalDigits: 2).format(cents / 100);
@@ -227,13 +229,17 @@ class _PrototypePageState extends State<PrototypePage>
                 : '${data.scheduledDays.where((d) => !d.isBefore(dateOnly(now))).length} scheduled workdays remaining',
           ),
           line(
-            'Consistency so far',
+            'Plan completion so far',
             '${(data.consistency(now) * 100).round()}%',
+          ),
+          line(
+            'Participation · Showed Up',
+            '${data.participationDays(now)} / ${data.dueDays(now).length} due days',
           ),
           line('Full-day streak', '${data.streak(now)} scheduled days'),
           line(
-            'Completed full days',
-            '${data.work.where((e) => e.minutes == data.targetMinutes).length} / 15',
+            'Targets met',
+            '${data.targetMetDays} / ${data.scheduledDays.length}',
           ),
           CheckboxListTile(
             contentPadding: EdgeInsets.zero,
@@ -258,7 +264,14 @@ class _PrototypePageState extends State<PrototypePage>
             [
               if (data.scheduled(dateOnly(now))) ...[
                 Text(
+                  data.progressFor(today).state.label,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                Text(
                   '${today?.minutes ?? 0} / ${data.targetMinutes} minutes · total for today',
+                ),
+                Text(
+                  '${data.progressFor(today).completionPercent}% of today’s target · Show Up minimum: ${data.progressFor(today).showUpMinutes} minutes',
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -277,15 +290,12 @@ class _PrototypePageState extends State<PrototypePage>
                   children: [
                     FilledButton(
                       onPressed:
-                          busy ||
-                              data.settledDay(now) ||
-                              today?.legacy == true ||
-                              today?.minutes == data.targetMinutes
+                          busy || data.settledDay(now) || today?.legacy == true
                           ? null
                           : _record,
                       child: Text(
-                        today?.minutes == data.targetMinutes
-                            ? 'Today completed'
+                        today != null
+                            ? 'Update today’s work'
                             : 'Record coding work',
                       ),
                     ),
@@ -294,7 +304,7 @@ class _PrototypePageState extends State<PrototypePage>
                           busy ||
                               data.settledDay(now) ||
                               today?.legacy == true ||
-                              today?.minutes == data.targetMinutes
+                              data.progressFor(today).targetMet
                           ? null
                           : _callIn,
                       child: const Text('Call In'),
@@ -334,13 +344,15 @@ class _PrototypePageState extends State<PrototypePage>
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(
-                e.minutes == data.targetMinutes
+                data.progressFor(e).targetMet
                     ? Icons.check_circle_outline
                     : e.minutes == 0
                     ? Icons.event_busy
                     : Icons.timelapse,
               ),
-              title: Text('${e.day} · ${e.minutes} min'),
+              title: Text(
+                '${e.day} · ${e.minutes} min · ${data.progressFor(e).state.label}',
+              ),
               subtitle: Text(
                 e.note.isNotEmpty
                     ? e.note
@@ -475,7 +487,7 @@ class _PrototypePageState extends State<PrototypePage>
         const SizedBox(height: 8),
         Text(
           p.key == 'reward'
-              ? 'At the ending: real deliverable completed, 80% Story consistency, and \$400 in Savings.'
+              ? 'At the ending: real deliverable completed, 80% weighted plan completion, and \$400 in Savings.'
               : 'Appears in your Home scene. Earn it through your recorded work.',
         ),
         const SizedBox(height: 12),
@@ -522,7 +534,7 @@ class _PrototypePageState extends State<PrototypePage>
         const SizedBox(height: 8),
         Text(
           data.raisedFrom == null
-              ? 'First review: earn 10 full-day equivalents with at least 90% recent consistency. The \$0.50 raise applies from the next pay period.'
+              ? 'First review: earn 10 full-day equivalents with at least 90% recent weighted plan completion. The \$0.50 raise applies from the next pay period.'
               : 'Raise earned! Your rate increased from ${data.raisedFrom}.',
         ),
       ],
@@ -632,15 +644,33 @@ class _PrototypePageState extends State<PrototypePage>
     );
     if (result == null || !mounted) return;
     final submittedAt = now;
-    await _change(
-      (s) => s.record(
+    var earnedGross = 0;
+    var earnedHours = 0.0;
+    WorkEntry? savedEntry;
+    final saved = await _change((s) {
+      final previous = s.entry(openedDay);
+      final previousGross = previous == null ? 0 : s.grossFor(previous);
+      final previousHours = s.fraction(previous) * 8;
+      s.record(
         submittedAt,
         result['minutes'],
         result['note'],
         '',
         expectedDay: openedDay,
+      );
+      savedEntry = s.entry(openedDay)!;
+      earnedGross = s.grossFor(savedEntry!) - previousGross;
+      earnedHours = s.fraction(savedEntry) * 8 - previousHours;
+    }, at: submittedAt);
+    if (!saved || !mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (_) => DailyRecapDialog(
+        progress: data.progressFor(savedEntry),
+        earnedGross: earnedGross,
+        earnedHours: earnedHours,
+        note: savedEntry!.note,
       ),
-      at: submittedAt,
     );
   }
 
@@ -877,7 +907,7 @@ class _StorySetupDialogState extends State<StorySetupDialog> {
               onChanged: (v) => setState(() => nextMonday = v),
             ),
             const Text(
-              '21 calendar days · 15 weekdays · weekends off. Final reward: save \$400, complete your deliverable and reach 80% consistency. Partial work counts proportionally.',
+              '21 calendar days · 15 weekdays · weekends off. Final reward: save \$400, complete your deliverable and reach 80% weighted plan completion. Partial work counts proportionally.',
             ),
           ],
         ),
@@ -940,14 +970,15 @@ class _WorkDialogState extends State<WorkDialog> {
               controller: minutes,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                labelText: 'Total minutes today (0–${widget.target})',
+                labelText: 'Total minutes today',
+                helperText: 'Planned target: ${widget.target} minutes',
               ),
               validator: (v) {
                 final n = int.tryParse(v ?? '');
                 return n == null ||
                         n < (widget.previous?.minutes ?? 0) ||
-                        n > widget.target
-                    ? 'Enter your total, between ${widget.previous?.minutes ?? 0} and ${widget.target}'
+                        n > DailyProgress.maximumDailyMinutes
+                    ? 'Enter your total, between ${widget.previous?.minutes ?? 0} and ${DailyProgress.maximumDailyMinutes}'
                     : null;
               },
             ),

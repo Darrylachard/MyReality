@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'daily_progress.dart';
 
 String dateKey(DateTime value) {
   final d = value.toLocal();
@@ -226,6 +227,16 @@ class StoryState {
         ];
   double fraction(WorkEntry? e) =>
       e == null ? 0 : (e.minutes / targetMinutes).clamp(0.0, 1.0);
+  DailyProgress progressFor(WorkEntry? e) => DailyProgress(
+    actualMinutes: e?.minutes ?? 0,
+    targetMinutes: targetMinutes,
+  );
+  int participationDays(DateTime now) => dueDays(
+    now,
+  ).where((d) => progressFor(entry(dateKey(d))).participated).length;
+  int get targetMetDays => scheduledDays
+      .where((d) => progressFor(entry(dateKey(d))).targetMet)
+      .length;
   int grossFor(WorkEntry e) =>
       e.legacy ? 0 : (fraction(e) * 8 * e.wage).round();
   int wageOn(DateTime date) =>
@@ -365,8 +376,8 @@ class StoryState {
     }
     if (minutes < (previous?.minutes ?? 0) ||
         minutes < 0 ||
-        minutes > targetMinutes) {
-      throw ArgumentError('Record your total for today, up to your target');
+        minutes > DailyProgress.maximumDailyMinutes) {
+      throw ArgumentError('Record your total for today, up to 1440 minutes');
     }
     work.removeWhere((e) => e.day == key);
     work.add(WorkEntry(key, minutes, note.trim(), reason, wageOn(d)));
@@ -524,7 +535,7 @@ class StoryState {
           consistency(now) < .8 ||
           savings < product.$2) {
         throw StateError(
-          'Finish your deliverable, reach 80% consistency and save \$400',
+          'Finish your deliverable, reach 80% weighted plan completion and save \$400',
         );
       }
       ledger.add(

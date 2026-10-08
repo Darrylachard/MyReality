@@ -104,7 +104,7 @@ void main() {
             MaterialApp(home: PrototypePage(now: () => clock)),
           );
           await tester.pumpAndSettle();
-          final button = find.text(absence ? 'Call In' : 'Record coding work');
+          final button = find.text(absence ? 'Call In' : 'Update today’s work');
           await tester.scrollUntilVisible(
             button,
             200,
@@ -120,6 +120,7 @@ void main() {
           await tester.tap(find.text(absence ? 'Sick' : 'Save work'));
           await tester.pumpAndSettle();
           expect(find.textContaining('The date changed'), findsOneWidget);
+          expect(find.text('Added by this update'), findsNothing);
           final saved = StoryRepository(Hive.box<dynamic>('account')).state;
           expect(saved.entry('2026-09-29')!.minutes, 20);
           expect(saved.entry('2026-09-30'), isNull);
@@ -142,14 +143,14 @@ void main() {
         );
         await tester.pumpAndSettle();
         await tester.scrollUntilVisible(
-          find.text('Record coding work'),
+          find.text('Update today’s work'),
           200,
           scrollable: find.byType(Scrollable).first,
         );
         expect(
           tester
               .widget<FilledButton>(
-                find.widgetWithText(FilledButton, 'Record coding work'),
+                find.widgetWithText(FilledButton, 'Update today’s work'),
               )
               .onPressed,
           isNull,

@@ -85,7 +85,7 @@ void main() {
         throwsStateError,
       );
       expect(
-        () => s.record(DateTime(2026, 9, 28), 121, '', ''),
+        () => s.record(DateTime(2026, 9, 28), 1441, '', ''),
         throwsArgumentError,
       );
       expect(
@@ -157,9 +157,9 @@ void main() {
         s.record(DateTime(2026, 10, day), 120, '', '');
       }
       expect(s.streak(DateTime(2026, 10, 4)), 5);
-    expect(s.streak(DateTime(2026, 10, 5, 10)), 5);
-    s.record(DateTime(2026, 10, 5, 10), 60, 'Still working', '');
-    expect(s.streak(DateTime(2026, 10, 5, 10)), 5);
+      expect(s.streak(DateTime(2026, 10, 5, 10)), 5);
+      s.record(DateTime(2026, 10, 5, 10), 60, 'Still working', '');
+      expect(s.streak(DateTime(2026, 10, 5, 10)), 5);
       expect(s.streak(DateTime(2026, 10, 6)), 0);
       expect(s.longestStreak, 5);
       expect(s.consistency(DateTime(2026, 10, 6)), closeTo(5.5 / 6, .0001));
