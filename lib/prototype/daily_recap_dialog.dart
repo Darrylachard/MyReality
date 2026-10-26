@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'daily_progress.dart';
+import '../Avatar/avatar_model.dart';
+import '../Avatar/avatar_widget.dart';
 
 /// Acknowledges a persisted update. It never grants or settles earnings.
 class DailyRecapDialog extends StatelessWidget {
@@ -8,6 +10,8 @@ class DailyRecapDialog extends StatelessWidget {
   final int earnedGross;
   final double earnedHours;
   final String note;
+  final AvatarModel? avatar;
+  final AvatarReaction reaction;
 
   const DailyRecapDialog({
     super.key,
@@ -15,6 +19,8 @@ class DailyRecapDialog extends StatelessWidget {
     required this.earnedGross,
     required this.earnedHours,
     required this.note,
+    this.avatar,
+    this.reaction = AvatarReaction.neutral,
   });
 
   @override
@@ -25,6 +31,15 @@ class DailyRecapDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (avatar != null)
+            Center(
+              child: AvatarWidget(
+                avatar: avatar!,
+                size: 100,
+                reaction: reaction,
+                event: reaction == AvatarReaction.neutral ? 0 : 1,
+              ),
+            ),
           Text('${progress.actualMinutes} focused minutes recorded today'),
           Text('${progress.completionPercent}% of today’s target'),
           const SizedBox(height: 16),

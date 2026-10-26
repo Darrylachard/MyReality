@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:projects/Avatar/avatar_model.dart';
 import 'package:projects/Avatar/avatar_widget.dart';
@@ -11,6 +13,18 @@ void main() {
   testWidgets('scene supports saved appearances, upgrades and reduced motion', (
     tester,
   ) async {
+    final reviewFont = Platform.environment['MYREALITY_REVIEW_FONT'];
+    if (reviewFont != null) {
+      await tester.runAsync(() async {
+        final loader = FontLoader('Review');
+        loader.addFont(
+          Future.value(
+            ByteData.sublistView(await File(reviewFont).readAsBytes()),
+          ),
+        );
+        await loader.load();
+      });
+    }
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -19,25 +33,38 @@ void main() {
     for (final upgraded in [false, true]) {
       await tester.pumpWidget(
         MaterialApp(
+          theme: ThemeData(
+            fontFamily: reviewFont == null ? null : 'Review',
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xff286755),
+            ),
+            cardTheme: const CardThemeData(color: Colors.white, elevation: 0),
+          ),
           home: Scaffold(
             body: RepaintBoundary(
               key: boundary,
-              child: Column(
-                children: [
-                  const SizedBox(height: 48),
-                  LifeScene(
-                    avatar: AvatarModel(skinTone: 'brown', hairColor: 'black'),
-                    owned: upgraded ? {'plant', 'workspace', 'reward'} : {},
-                    onEdit: () {},
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Text(
-                      'Real effort. Visible progress.',
-                      style: TextStyle(fontSize: 22),
+              child: ColoredBox(
+                color: const Color(0xfff4f5f0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 48),
+                    LifeScene(
+                      avatar: AvatarModel(
+                        skinTone: 'brown',
+                        hairColor: 'black',
+                      ),
+                      owned: upgraded ? {'plant', 'workspace', 'reward'} : {},
+                      onEdit: () {},
                     ),
-                  ),
-                ],
+                    const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text(
+                        'Real effort. Visible progress.',
+                        style: TextStyle(fontSize: 22),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

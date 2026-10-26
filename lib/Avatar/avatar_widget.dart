@@ -48,6 +48,7 @@ class _AvatarWidgetState extends State<AvatarWidget>
   bool active = true;
   bool reduced = false;
   bool celebrating = false;
+  bool initialized = false;
   @override
   void initState() {
     super.initState();
@@ -59,6 +60,15 @@ class _AvatarWidgetState extends State<AvatarWidget>
     super.didChangeDependencies();
     reduced = MediaQuery.disableAnimationsOf(context);
     _schedule();
+    if (!initialized) {
+      initialized = true;
+      if (widget.event > 0 &&
+          widget.reaction != AvatarReaction.neutral &&
+          !reduced) {
+        celebrating = true;
+        motion.forward(from: 0);
+      }
+    }
   }
 
   void _schedule() {

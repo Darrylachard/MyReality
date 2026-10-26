@@ -13,6 +13,7 @@ import 'pay_statement_sheet.dart';
 import 'daily_progress.dart';
 import 'daily_recap_dialog.dart';
 import 'life_scene.dart';
+import 'life_feedback.dart';
 
 String dollars(int cents) =>
     NumberFormat.currency(symbol: r'$', decimalDigits: 2).format(cents / 100);
@@ -35,6 +36,7 @@ class _PrototypePageState extends State<PrototypePage>
   int reactionEvent = 0;
   String? reactionCaption;
   Timer? timer;
+  Timer? reactionTimer;
   StoryState get data => repository!.state;
   DateTime get now => widget.now();
 
@@ -86,8 +88,22 @@ class _PrototypePageState extends State<PrototypePage>
     if (busy || repository == null) return false;
     setState(() => busy = true);
     try {
+      final before = data;
       await repository!.update(at ?? now, command);
-      if (mounted) setState(() {});
+      final feedback = LifeFeedback.between(before, data, dateKey(at ?? now));
+      if (mounted) {
+        setState(() {
+          if (feedback != null) {
+            reaction = feedback.reaction;
+            reactionCaption = feedback.caption;
+            reactionEvent++;
+            reactionTimer?.cancel();
+            reactionTimer = Timer(const Duration(seconds: 3), () {
+              if (mounted) setState(() => reaction = AvatarReaction.neutral);
+            });
+          }
+        });
+      }
       return true;
     } catch (e) {
       if (mounted) {
@@ -104,6 +120,7 @@ class _PrototypePageState extends State<PrototypePage>
   @override
   void dispose() {
     timer?.cancel();
+    reactionTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -558,6 +575,7 @@ class _PrototypePageState extends State<PrototypePage>
     var earnedGross = 0;
     var earnedHours = 0.0;
     WorkEntry? savedEntry;
+    final previousEvent = reactionEvent;
     final saved = await _change((s) {
       final previous = s.entry(openedDay);
       final previousGross = previous == null ? 0 : s.grossFor(previous);
@@ -581,6 +599,10 @@ class _PrototypePageState extends State<PrototypePage>
         earnedGross: earnedGross,
         earnedHours: earnedHours,
         note: savedEntry!.note,
+        avatar: AvatarModel.fromMap(data.avatar),
+        reaction: reactionEvent > previousEvent
+            ? reaction
+            : AvatarReaction.neutral,
       ),
     );
   }
@@ -631,27 +653,12 @@ class _PrototypePageState extends State<PrototypePage>
     final result = await Navigator.push<AvatarModel>(
       context,
       MaterialPageRoute(
-        builder: (_) => AvatarCreatorPage(
-          initial: data.avatar == null
-              ? null
-              : AvatarModel(
-                  bodyType: data.avatar!['body'],
-                  skinTone: data.avatar!['skin'],
-                  hairStyle: data.avatar!['hair'],
-                  hairColor: data.avatar!['hairColor'] ?? 'natural',
-                ),
-        ),
+        builder: (_) =>
+            AvatarCreatorPage(initial: AvatarModel.fromMap(data.avatar)),
       ),
     );
     if (result == null || !mounted) return;
-    await _change(
-      (s) => s.avatar = {
-        'body': result.bodyType,
-        'skin': result.skinTone,
-        'hair': result.hairStyle,
-        'hairColor': result.hairColor,
-      },
-    );
+    await _change((s) => s.avatar = result.toMap());
   }
 
   Future<void> _buy(String id) async {
@@ -675,7 +682,10 @@ class _PrototypePageState extends State<PrototypePage>
         ],
       ),
     );
-    if (confirmed == true && mounted) await _change((s) => s.buy(now, id));
+    if (confirmed == true && mounted) {
+      final saved = await _change((s) => s.buy(now, id));
+      if (saved && mounted) setState(() => tab = 0);
+    }
   }
 
   Future<void> _transfer(bool toSavings) async {
