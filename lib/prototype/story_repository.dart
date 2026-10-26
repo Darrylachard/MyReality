@@ -24,6 +24,8 @@ class StoryRepository {
       next.settle(now);
       command(next);
       await box.put(key, next.toMap());
+      // A stopped emulator must not depend on an eventual buffered disk write.
+      await box.flush();
       state = next;
     } finally {
       _busy = false;
