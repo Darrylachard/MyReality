@@ -250,6 +250,15 @@ class _PrototypePageState extends State<PrototypePage>
                 : '${data.scheduledDays.where((d) => !d.isBefore(dateOnly(now))).length} scheduled workdays remaining',
           ),
           line(
+            'Total recorded effort',
+            '${data.work.fold<int>(0, (sum, entry) => sum + entry.minutes)} minutes',
+          ),
+          TextButton.icon(
+            onPressed: _openTimeline,
+            icon: const Icon(Icons.history),
+            label: const Text('Open recorded timeline'),
+          ),
+          line(
             'Plan completion so far',
             '${(data.consistency(now) * 100).round()}%',
           ),
@@ -356,36 +365,63 @@ class _PrototypePageState extends State<PrototypePage>
               'Your final partial paycheck has been settled. You can keep this Story, celebrate, and take a break.',
             ),
           ]),
-        panel('Your work, day by day', [
-          if (data.work.isEmpty)
-            const Text('Your first work note will appear here.'),
-          for (final e in [
-            ...data.work,
-          ]..sort((a, b) => b.day.compareTo(a.day)))
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(
-                data.progressFor(e).targetMet
-                    ? Icons.check_circle_outline
-                    : e.minutes == 0
-                    ? Icons.event_busy
-                    : Icons.timelapse,
-              ),
-              title: Text(
-                '${e.day} · ${e.minutes} min · ${data.progressFor(e).state.label}',
-              ),
-              subtitle: Text(
-                e.note.isNotEmpty
-                    ? e.note
-                    : e.reason.isNotEmpty
-                    ? e.reason
-                    : 'Work recorded',
-              ),
-            ),
-        ]),
+        _workHistory(),
       ],
     ]);
   }
+
+  Widget _workHistory() => panel('Your work, day by day', [
+    if (data.work.isEmpty) const Text('Your first work note will appear here.'),
+    for (final e in [...data.work]..sort((a, b) => b.day.compareTo(a.day)))
+      ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(
+          data.progressFor(e).targetMet
+              ? Icons.check_circle_outline
+              : e.minutes == 0
+              ? Icons.event_busy
+              : Icons.timelapse,
+        ),
+        title: Text(
+          '${e.day} · ${e.minutes} min · ${data.progressFor(e).state.label}',
+        ),
+        subtitle: Text(
+          e.note.isNotEmpty
+              ? e.note
+              : e.reason.isNotEmpty
+              ? e.reason
+              : 'Work recorded',
+        ),
+      ),
+  ]);
+
+  void _openTimeline() => showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    showDragHandle: true,
+    builder: (_) => FractionallySizedBox(
+      heightFactor: .8,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Your saved Story timeline',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'A new day starts at zero minutes. Your past work stays recorded here.',
+            ),
+            const SizedBox(height: 16),
+            _workHistory(),
+          ],
+        ),
+      ),
+    ),
+  );
 
   Widget _scene() => LifeScene(
     avatar: AvatarModel.fromMap(data.avatar),

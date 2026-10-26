@@ -19,6 +19,48 @@ void main() {
     await Hive.close();
   });
 
+  testWidgets('new day keeps yesterday accessible from the recorded timeline', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final yesterday = DateTime(2026, 9, 28);
+    final state = StoryState()
+      ..begin(
+        yesterday,
+        name: 'Build',
+        outcome: 'Demo',
+        reason: 'Learn',
+        minutes: 120,
+        nextMonday: false,
+      );
+    state.record(yesterday, 60, 'Finished the first screen', '');
+    await Hive.box<dynamic>('account').put(StoryRepository.key, state.toMap());
+    await tester.pumpWidget(
+      MaterialApp(home: PrototypePage(now: () => addDays(yesterday, 1))),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Open recorded timeline'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('60 minutes'), findsOneWidget);
+    await tester.tap(find.text('Open recorded timeline'));
+    await tester.pumpAndSettle();
+    expect(find.text('Your saved Story timeline'), findsOneWidget);
+    expect(find.text('Finished the first screen'), findsWidgets);
+    expect(
+      StoryRepository(Hive.box<dynamic>('account')).state.work.single.minutes,
+      60,
+    );
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets(
     'mobile onboarding, partial work and Account survive navigation',
     (tester) async {
