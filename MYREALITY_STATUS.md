@@ -1,6 +1,6 @@
 # MyReality status
 
-Updated: 2026-10-25. Weekly target: 2026-11-01 (today is Sunday).
+Updated: 2026-10-26. Weekly target: 2026-11-01.
 Repository: https://github.com/Darrylachard/MyReality
 Working branch: `codex/visible-life-milestone`.
 
@@ -19,11 +19,17 @@ Working branch: `codex/visible-life-milestone`.
 4. `dd6e040`: Added cumulative recorded effort and a direct saved-timeline sheet; yesterday remains accessible on a new day without beginning another Story.
 5. Created daily 10:00 local-time follow-up in this chat (`myreality-weekly-milestone`). Machine must be on and desktop app running. Stop implementation after November 1 or verified completion, then pause the automation.
 
+## October 26 accessibility check
+- Reproduced a 107-pixel Home header overflow at 200% text on a 320px phone viewport. Replaced the rigid header row with wrapping controls.
+- Regression verifies no overflow and a tappable Create avatar control at 100%, 200% and 300% text. Scene/reduced-motion and avatar editor tests also pass (3 targeted tests); full analyzer passes with no issues.
+- Emulator is connected, but this bounded task used isolated widget fixtures; no device settings or user Story data were changed. Android install remains the October 25 build until the next device QA pass.
+- Broader large-text review and isolated on-device reactions/purchases remain pending.
+
 ## Current task
 Core visual foundation and timeline continuity are implemented. Full Pixel_4_XL shutdown/relaunch passed: the entire decoded snapshot was identical before and after restart. The update preserves the October 8 Story, one 120-minute entry, its note, and avatar exactly. Two newly due pay periods settled on October 25 before the comparison. Private local snapshots are in `.myreality-local/2026-10-25/`, ignored by Git; never publish them. Final Android build passed and was installed over the existing app without clearing data. Next: isolated-device reaction/upgrade QA and user visual review.
 
 ## Next task / ordered queue
-1. Complete actual-device reaction/upgrade QA on isolated test data and large-text review. The real user timeline has already passed full emulator restart verification.
+1. Complete actual-device reaction/upgrade QA on isolated test data and extend large-text review beyond the now-fixed Home scene header. The real user timeline has already passed full emulator restart verification.
 2. Review the new cumulative effort total and Open recorded timeline shortcut with the user; verify the distinction between today and past history is clear.
 3. Verify work reactions, payday, all appearance variants, reduced motion and purchase persistence on a separate test dataset/device. Do not alter the user's saved Story to demonstrate rewards.
 4. Review visual direction with the user; refine character proportions/expressions and room detail based on real Android viewing. Current art is a first coherent pass, not final art approval.
@@ -60,5 +66,3 @@ Core visual foundation and timeline continuity are implemented. Full Pixel_4_XL 
 
 ## Resume instructions
 Read this file, inspect Git status, preserve unrelated/user changes, then choose the first unfinished safe task. Work only on MyReality. Do not reset saved progress, wipe emulator data, falsify work, or purchase items in the user's Story for testing. Use isolated fixtures for demonstrations. Keep this file current after each verified task. Never claim scheduled work ran when the machine/app was unavailable.
-
-
