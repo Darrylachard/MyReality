@@ -12,6 +12,7 @@ import 'story_state.dart';
 import 'pay_statement_sheet.dart';
 import 'daily_progress.dart';
 import 'daily_recap_dialog.dart';
+import 'life_scene.dart';
 
 String dollars(int cents) =>
     NumberFormat.currency(symbol: r'$', decimalDigits: 2).format(cents / 100);
@@ -30,6 +31,9 @@ class _PrototypePageState extends State<PrototypePage>
   String? loadError;
   bool busy = false;
   int tab = 0;
+  AvatarReaction reaction = AvatarReaction.neutral;
+  int reactionEvent = 0;
+  String? reactionCaption;
   Timer? timer;
   StoryState get data => repository!.state;
   DateTime get now => widget.now();
@@ -366,114 +370,21 @@ class _PrototypePageState extends State<PrototypePage>
     ]);
   }
 
-  Widget _scene() {
-    final a = data.avatar;
-    final name = data.owned.contains('reward')
-        ? 'A space you earned.'
-        : data.owned.contains('workspace')
-        ? 'Room to grow.'
-        : 'This is your beginning.';
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: SizedBox(
-        height: 270,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset('assets/bg/home.png', fit: BoxFit.cover),
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0x99213a30),
-                    Color(0x00213a30),
-                    Color(0xcc132a24),
-                  ],
-                  stops: [0, .45, 1],
-                ),
-              ),
-            ),
-            if (a != null)
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: AvatarWidget(
-                    avatar: AvatarModel(
-                      bodyType: a['body'],
-                      skinTone: a['skin'],
-                      hairStyle: a['hair'],
-                      hairColor: a['hairColor'] ?? 'natural',
-                    ),
-                    size: 190,
-                  ),
-                ),
-              ),
-            const Positioned(
-              left: 20,
-              top: 22,
-              child: Text(
-                'YOUR SPACE',
-                style: TextStyle(
-                  color: Colors.white,
-                  letterSpacing: 2.5,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            Positioned(
-              right: 12,
-              top: 10,
-              child: FilledButton.tonalIcon(
-                onPressed: busy ? null : _avatar,
-                icon: const Icon(Icons.tune, size: 16),
-                label: Text(a == null ? 'Create avatar' : 'Edit avatar'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xeef4f5f0),
-                  foregroundColor: const Color(0xff183b33),
-                ),
-              ),
-            ),
-            if (data.owned.contains('plant'))
-              const Positioned(
-                left: 25,
-                bottom: 58,
-                child: Icon(Icons.yard, size: 50, color: Color(0xff8fcfa5)),
-              ),
-            if (data.owned.contains('workspace'))
-              const Positioned(
-                right: 20,
-                bottom: 58,
-                child: Icon(Icons.desk, size: 65, color: Color(0xffffd39b)),
-              ),
-            if (data.owned.contains('reward'))
-              const Positioned(
-                right: 36,
-                bottom: 108,
-                child: Icon(Icons.computer, size: 40, color: Colors.white),
-              ),
-            Positioned(
-              left: 20,
-              right: 20,
-              bottom: 16,
-              child: Text(
-                name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 20,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
+  Widget _scene() => LifeScene(
+    avatar: AvatarModel.fromMap(data.avatar),
+    customized: data.avatar != null,
+    owned: data.owned.toSet(),
+    onEdit: busy ? null : _avatar,
+    reaction: reaction,
+    event: reactionEvent,
+    caption:
+        reactionCaption ??
+        (data.owned.contains('reward')
+            ? 'A space you earned.'
+            : data.owned.contains('workspace')
+            ? 'Room to grow.'
+            : 'Small steps. A life taking shape.'),
+  );
   Widget shop() => page([
     panel('Make this space yours', [
       line('Available in Checking', dollars(data.available)),

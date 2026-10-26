@@ -13,6 +13,20 @@ class AvatarModel {
     this.hairColor = 'natural',
   });
 
+  factory AvatarModel.fromMap(Map<String, dynamic>? map) => AvatarModel(
+    bodyType: map?['body'] ?? 'M',
+    skinTone: map?['skin'] ?? 'light',
+    hairStyle: map?['hair'] ?? 'dreads',
+    hairColor: map?['hairColor'] ?? 'natural',
+  );
+
+  Map<String, dynamic> toMap() => {
+    'body': bodyType,
+    'skin': skinTone,
+    'hair': hairStyle,
+    'hairColor': hairColor,
+  };
+
   String get bodyAsset => bodyType == "F"
       ? "assets/avatar/body/base_f.png"
       : "assets/avatar/body/base_m.png";
