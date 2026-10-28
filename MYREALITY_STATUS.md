@@ -1,6 +1,6 @@
 # MyReality status
 
-Updated: 2026-10-27. Weekly target: 2026-11-01.
+Updated: 2026-10-28. Weekly target: 2026-11-01.
 Repository: https://github.com/Darrylachard/MyReality
 Working branch: `codex/visible-life-milestone`.
 
@@ -30,11 +30,17 @@ Working branch: `codex/visible-life-milestone`.
 - Regression covers hidden initial/update events, returning to the screen without replay, and a fresh visible reaction. Four targeted tests pass (motion, scene/reduced motion, saved recap and failed-save behavior); analyzer reports no issues.
 - This task uses isolated widget fixtures. No emulator settings, saved work, payroll, purchases or appearance were changed. Device installation remains pending along with the October 26 layout fix.
 
+## October 28 Android build and purchase-flow check
+- Rebuilt the debug APK with the October 26 large-text and October 27 hidden-reaction fixes: `build/app/outputs/flutter-apk/app-debug.apk`.
+- All 45 existing tests passed. Added and passed an isolated purchase UI regression: confirm a plant purchase, return to the upgraded Home, recreate the page, retain ownership and the exact saved snapshot, and do not charge or celebrate twice. This complements the existing real-disk persistence test; widget recreation alone is not a device restart test.
+- Analyzer passes with no issues. APK SHA-256: `36F46E74CE49AA3D8F4390BC7FF5B53B8819852F851C5AD7A138BEBF7C32C237`.
+- ADB reports no connected devices today. No installation, user-data change or device setting change was performed. On-device QA is still pending.
+
 ## Current task
-Core visual foundation and timeline continuity are implemented. Full Pixel_4_XL shutdown/relaunch passed: the entire decoded snapshot was identical before and after restart. The update preserves the October 8 Story, one 120-minute entry, its note, and avatar exactly. Two newly due pay periods settled on October 25 before the comparison. Private local snapshots are in `.myreality-local/2026-10-25/`, ignored by Git; never publish them. Final Android build passed and was installed over the existing app without clearing data. Next: isolated-device reaction/upgrade QA and user visual review.
+Core visual foundation and timeline continuity are implemented. Full Pixel_4_XL shutdown/relaunch passed: the entire decoded snapshot was identical before and after restart. The update preserves the October 8 Story, one 120-minute entry, its note, and avatar exactly. Two newly due pay periods settled on October 25 before the comparison. Private local snapshots are in `.myreality-local/2026-10-25/`, ignored by Git; never publish them. Final Android build passed and was installed over the existing app without clearing data. The October 28 APK now includes the subsequent layout and motion fixes. Next: install it on an isolated test device for reaction/upgrade QA and obtain user visual review.
 
 ## Next task / ordered queue
-1. Build the latest fixes, then complete actual-device reaction/upgrade QA on isolated test data and extend large-text review beyond the now-fixed Home scene header. The real user timeline has already passed full emulator restart verification.
+1. Install the October 28 build on an isolated test device, then complete actual-device reaction/upgrade QA on isolated test data and extend large-text review beyond the now-fixed Home scene header. The real user timeline has already passed full emulator restart verification.
 2. Review the new cumulative effort total and Open recorded timeline shortcut with the user; verify the distinction between today and past history is clear.
 3. Verify work reactions, payday, all appearance variants, reduced motion and purchase persistence on a separate test dataset/device. Do not alter the user's saved Story to demonstrate rewards.
 4. Review visual direction with the user; refine character proportions/expressions and room detail based on real Android viewing. Current art is a first coherent pass, not final art approval.
