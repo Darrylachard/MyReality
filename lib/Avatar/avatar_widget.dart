@@ -49,6 +49,7 @@ class _AvatarWidgetState extends State<AvatarWidget>
   bool reduced = false;
   bool celebrating = false;
   bool initialized = false;
+  bool get canMove => !reduced && active && TickerMode.of(context);
   @override
   void initState() {
     super.initState();
@@ -64,7 +65,7 @@ class _AvatarWidgetState extends State<AvatarWidget>
       initialized = true;
       if (widget.event > 0 &&
           widget.reaction != AvatarReaction.neutral &&
-          !reduced) {
+          canMove) {
         celebrating = true;
         motion.forward(from: 0);
       }
@@ -73,7 +74,7 @@ class _AvatarWidgetState extends State<AvatarWidget>
 
   void _schedule() {
     idle?.cancel();
-    if (reduced || !active || !widget.animate || !TickerMode.of(context)) {
+    if (!canMove || !widget.animate) {
       motion.stop();
       return;
     }
@@ -89,8 +90,7 @@ class _AvatarWidgetState extends State<AvatarWidget>
     _schedule();
     if (widget.event != oldWidget.event &&
         widget.reaction != AvatarReaction.neutral &&
-        !reduced &&
-        active) {
+        canMove) {
       celebrating = true;
       motion.forward(from: 0);
     }

@@ -1,6 +1,6 @@
 # MyReality status
 
-Updated: 2026-10-26. Weekly target: 2026-11-01.
+Updated: 2026-10-27. Weekly target: 2026-11-01.
 Repository: https://github.com/Darrylachard/MyReality
 Working branch: `codex/visible-life-milestone`.
 
@@ -10,7 +10,7 @@ Working branch: `codex/visible-life-milestone`.
 - Original Flutter vector character and warm room replace broken asset layers and the watermarked background in the active app. Existing appearance IDs are preserved.
 - Character breathes/blinks periodically and acknowledges successfully saved Showed Up, Solid Progress, Target Met, payday and purchases. Reduced-motion settings are respected. Motion is presentation-only.
 - Plant, workspace furniture and final monitor reward visibly change the room; a purchase returns to Home.
-- Current validation: 43 tests verified (full suite plus corrected phone-viewport navigation test), analyzer clean, debug Android APK builds. Pixel_4_XL update installed without clearing data; Home inspected on-device.
+- October 25 baseline validation: 43 tests verified (full suite plus corrected phone-viewport navigation test), analyzer clean, debug Android APK builds. Pixel_4_XL update installed without clearing data; Home inspected on-device.
 
 ## Completed this week
 1. `e4b2da9`: explicitly flush successful Story writes; disk-reopen regression covers work, notes, appearance, payroll, savings and ownership; invalid saves are not reset.
@@ -25,11 +25,16 @@ Working branch: `codex/visible-life-milestone`.
 - Emulator is connected, but this bounded task used isolated widget fixtures; no device settings or user Story data were changed. Android install remains the October 25 build until the next device QA pass.
 - Broader large-text review and isolated on-device reactions/purchases remain pending.
 
+## October 27 motion check
+- Reproduced a hidden avatar starting a reaction despite TickerMode being disabled. Initial and updated reactions now share the same visibility, lifecycle and reduced-motion gate as idle motion.
+- Regression covers hidden initial/update events, returning to the screen without replay, and a fresh visible reaction. Four targeted tests pass (motion, scene/reduced motion, saved recap and failed-save behavior); analyzer reports no issues.
+- This task uses isolated widget fixtures. No emulator settings, saved work, payroll, purchases or appearance were changed. Device installation remains pending along with the October 26 layout fix.
+
 ## Current task
 Core visual foundation and timeline continuity are implemented. Full Pixel_4_XL shutdown/relaunch passed: the entire decoded snapshot was identical before and after restart. The update preserves the October 8 Story, one 120-minute entry, its note, and avatar exactly. Two newly due pay periods settled on October 25 before the comparison. Private local snapshots are in `.myreality-local/2026-10-25/`, ignored by Git; never publish them. Final Android build passed and was installed over the existing app without clearing data. Next: isolated-device reaction/upgrade QA and user visual review.
 
 ## Next task / ordered queue
-1. Complete actual-device reaction/upgrade QA on isolated test data and extend large-text review beyond the now-fixed Home scene header. The real user timeline has already passed full emulator restart verification.
+1. Build the latest fixes, then complete actual-device reaction/upgrade QA on isolated test data and extend large-text review beyond the now-fixed Home scene header. The real user timeline has already passed full emulator restart verification.
 2. Review the new cumulative effort total and Open recorded timeline shortcut with the user; verify the distinction between today and past history is clear.
 3. Verify work reactions, payday, all appearance variants, reduced motion and purchase persistence on a separate test dataset/device. Do not alter the user's saved Story to demonstrate rewards.
 4. Review visual direction with the user; refine character proportions/expressions and room detail based on real Android viewing. Current art is a first coherent pass, not final art approval.
