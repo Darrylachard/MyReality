@@ -1,6 +1,6 @@
 # MyReality status
 
-Updated: 2026-10-28. Weekly target: 2026-11-01.
+Updated: 2026-10-31. Weekly target: 2026-11-01.
 Repository: https://github.com/Darrylachard/MyReality
 Working branch: `codex/visible-life-milestone`.
 
@@ -35,6 +35,10 @@ Working branch: `codex/visible-life-milestone`.
 - All 45 existing tests passed. Added and passed an isolated purchase UI regression: confirm a plant purchase, return to the upgraded Home, recreate the page, retain ownership and the exact saved snapshot, and do not charge or celebrate twice. This complements the existing real-disk persistence test; widget recreation alone is not a device restart test.
 - Analyzer passes with no issues. APK SHA-256: `36F46E74CE49AA3D8F4390BC7FF5B53B8819852F851C5AD7A138BEBF7C32C237`.
 - ADB reports no connected devices today. No installation, user-data change or device setting change was performed. On-device QA is still pending.
+
+## October 31 recap accessibility check
+- The saved-work recap passes at 320x640 with 300% text and landscape 640x360 with 200% text. The accomplishment section remains scrollable and Done dismisses the dialog without overflow. Added an isolated widget regression; it passes and its analyzer check is clean. No product code change was required.
+- ADB still reports no connected devices. The October 28 APK remains the latest build; installation, actual-device reaction/upgrade QA and user visual review remain pending. No user data was touched.
 
 ## Current task
 Core visual foundation and timeline continuity are implemented. Full Pixel_4_XL shutdown/relaunch passed: the entire decoded snapshot was identical before and after restart. The update preserves the October 8 Story, one 120-minute entry, its note, and avatar exactly. Two newly due pay periods settled on October 25 before the comparison. Private local snapshots are in `.myreality-local/2026-10-25/`, ignored by Git; never publish them. Final Android build passed and was installed over the existing app without clearing data. The October 28 APK now includes the subsequent layout and motion fixes. Next: install it on an isolated test device for reaction/upgrade QA and obtain user visual review.
