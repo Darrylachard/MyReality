@@ -1,6 +1,6 @@
 # MyReality status
 
-Updated: 2026-10-31. Weekly target: 2026-11-01.
+Updated: 2026-11-02. Weekly target ended: 2026-11-01.
 Repository: https://github.com/Darrylachard/MyReality
 Working branch: `codex/visible-life-milestone`.
 
@@ -17,7 +17,7 @@ Working branch: `codex/visible-life-milestone`.
 2. `53fa86d`: replace active avatar and room with original illustrations and ownership-driven furniture.
 3. `2cca369`: wire committed-event feedback, short celebrations and purchase navigation; add threshold/replay tests.
 4. `dd6e040`: Added cumulative recorded effort and a direct saved-timeline sheet; yesterday remains accessible on a new day without beginning another Story.
-5. Created daily 10:00 local-time follow-up in this chat (`myreality-weekly-milestone`). Machine must be on and desktop app running. Stop implementation after November 1 or verified completion, then pause the automation.
+5. Daily follow-up ran through the milestone window. The expired `myreality-weekly-milestone` automation was deleted on November 2; no further scheduled implementation will run.
 
 ## October 26 accessibility check
 - Reproduced a 107-pixel Home header overflow at 200% text on a 320px phone viewport. Replaced the rigid header row with wrapping controls.
@@ -39,6 +39,13 @@ Working branch: `codex/visible-life-milestone`.
 ## October 31 recap accessibility check
 - The saved-work recap passes at 320x640 with 300% text and landscape 640x360 with 200% text. The accomplishment section remains scrollable and Done dismisses the dialog without overflow. Added an isolated widget regression; it passes and its analyzer check is clean. No product code change was required.
 - ADB still reports no connected devices. The October 28 APK remains the latest build; installation, actual-device reaction/upgrade QA and user visual review remain pending. No user data was touched.
+
+## Milestone closeout — November 2
+- Scheduled implementation has stopped because the November 1 window ended. The expired automation was deleted; the project and remaining queue are retained.
+- Delivered: original room/character, idle and saved-event reactions, visible upgrades, timeline access, save flushing, and accessibility/motion fixes. Economy and Story rules remain unchanged.
+- Latest validation: October 28 full suite (45 tests), the additional purchase-flow test, and October 31 recap accessibility test passed; analyzer checks passed. October 28 debug APK built successfully. No new tests were run for this documentation-only closeout.
+- The milestone is NOT fully accepted: latest APK installation and isolated on-device reaction/upgrade QA, broader accessibility checks, user visual approval and target-phone review remain open. Portable restore remains unimplemented.
+- Resume with the ordered queue below when the user returns; do not automatically extend the schedule or expand product scope.
 
 ## Current task
 Core visual foundation and timeline continuity are implemented. Full Pixel_4_XL shutdown/relaunch passed: the entire decoded snapshot was identical before and after restart. The update preserves the October 8 Story, one 120-minute entry, its note, and avatar exactly. Two newly due pay periods settled on October 25 before the comparison. Private local snapshots are in `.myreality-local/2026-10-25/`, ignored by Git; never publish them. Final Android build passed and was installed over the existing app without clearing data. The October 28 APK now includes the subsequent layout and motion fixes. Next: install it on an isolated test device for reaction/upgrade QA and obtain user visual review.
