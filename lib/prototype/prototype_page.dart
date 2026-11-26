@@ -873,61 +873,61 @@ class _StorySetupDialogState extends State<StorySetupDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
+    // Title and form scroll together so large text fits short screens.
+    scrollable: true,
     title: const Text('Your three-week agreement'),
-    content: SingleChildScrollView(
-      child: Form(
-        key: form,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: title,
-              decoration: const InputDecoration(labelText: 'Story name'),
-              maxLength: 100,
-              validator: (v) => v!.trim().isEmpty ? 'Name your Story' : null,
+    content: Form(
+      key: form,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextFormField(
+            controller: title,
+            decoration: const InputDecoration(labelText: 'Story name'),
+            maxLength: 100,
+            validator: (v) => v!.trim().isEmpty ? 'Name your Story' : null,
+          ),
+          TextFormField(
+            controller: outcome,
+            decoration: const InputDecoration(
+              labelText: 'What will be ready at the end?',
             ),
-            TextFormField(
-              controller: outcome,
-              decoration: const InputDecoration(
-                labelText: 'What will be ready at the end?',
-              ),
-              maxLength: 200,
-              validator: (v) =>
-                  v!.trim().isEmpty ? 'Choose a concrete deliverable' : null,
+            maxLength: 200,
+            validator: (v) =>
+                v!.trim().isEmpty ? 'Choose a concrete deliverable' : null,
+          ),
+          TextFormField(
+            controller: minutes,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Coding minutes per weekday',
             ),
-            TextFormField(
-              controller: minutes,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Coding minutes per weekday',
-              ),
-              validator: (v) {
-                final n = int.tryParse(v ?? '');
-                return n == null || n < 15 || n > 480
-                    ? 'Enter 15–480 minutes'
-                    : null;
-              },
+            validator: (v) {
+              final n = int.tryParse(v ?? '');
+              return n == null || n < 15 || n > 480
+                  ? 'Enter 15–480 minutes'
+                  : null;
+            },
+          ),
+          TextFormField(
+            controller: why,
+            decoration: const InputDecoration(
+              labelText: 'Why this matters (optional)',
             ),
-            TextFormField(
-              controller: why,
-              decoration: const InputDecoration(
-                labelText: 'Why this matters (optional)',
-              ),
-              maxLength: 400,
-              maxLines: 2,
-            ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Start next Monday'),
-              subtitle: const Text('Off: start today'),
-              value: nextMonday,
-              onChanged: (v) => setState(() => nextMonday = v),
-            ),
-            const Text(
-              '3 weeks · Weekends off\nReward: \$400 saved + deliverable + 80% progress',
-            ),
-          ],
-        ),
+            maxLength: 400,
+            maxLines: 2,
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Start next Monday'),
+            subtitle: const Text('Off: start today'),
+            value: nextMonday,
+            onChanged: (v) => setState(() => nextMonday = v),
+          ),
+          const Text(
+            '3 weeks · Weekends off\nReward: \$400 saved + deliverable + 80% progress',
+          ),
+        ],
       ),
     ),
     actions: [
