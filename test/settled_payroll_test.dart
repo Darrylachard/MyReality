@@ -164,7 +164,7 @@ void main() {
           isNull,
         );
         expect(
-          find.text('This pay period is settled. Work entries are locked.'),
+          find.text('Paid · Entry locked'),
           findsOneWidget,
         );
         await tester.pumpWidget(const SizedBox.shrink());
@@ -172,3 +172,4 @@ void main() {
     );
   });
 }
+

@@ -34,6 +34,11 @@ void main() {
           'skin': 'brown',
           'hair': 'no_hair',
           'hairColor': 'copper',
+          'outfit': 'jacket',
+          'outfitColor': 'clay',
+          'glasses': 'round',
+          'facialHair': 'stubble',
+          'faceShape': 'defined',
         };
       });
       for (var i = 0; i < 5; i++) {

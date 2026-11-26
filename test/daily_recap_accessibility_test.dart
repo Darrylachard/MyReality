@@ -59,7 +59,7 @@ void main() {
         isNull,
         reason: '${sample.$1} at ${sample.$2}x',
       );
-      await tester.ensureVisible(find.text('What you moved forward'));
+      await tester.ensureVisible(find.text('Note'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       await tester.tap(find.text('Done'));

@@ -10,6 +10,7 @@ class LifeScene extends StatelessWidget {
   final int event;
   final String caption;
   final bool customized;
+  final bool compact;
   final VoidCallback? onEdit;
   const LifeScene({
     super.key,
@@ -20,74 +21,128 @@ class LifeScene extends StatelessWidget {
     this.event = 0,
     this.caption = 'Small steps. A life taking shape.',
     this.customized = false,
+    this.compact = false,
   });
   @override
-  Widget build(BuildContext context) => Card(
-    clipBehavior: Clip.antiAlias,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(18, 8, 8, 0),
-          child: Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 12,
-            children: [
-              const Text(
-                'YOUR SPACE',
-                style: TextStyle(
-                  fontSize: 11,
-                  letterSpacing: 2,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              TextButton.icon(
-                onPressed: onEdit,
-                icon: const Icon(Icons.tune, size: 16),
-                label: Text(customized ? 'Edit avatar' : 'Create avatar'),
-              ),
-            ],
-          ),
-        ),
-        AspectRatio(
-          aspectRatio: 1.4,
-          child: LayoutBuilder(
-            builder: (context, bounds) => Stack(
+  Widget build(BuildContext context) => compact
+      ? Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
               children: [
-                Positioned.fill(
-                  child: Semantics(
-                    label:
-                        'Your room${owned.contains('plant') ? ', desk plant' : ''}${owned.contains('workspace') ? ', upgraded workspace' : ''}${owned.contains('reward') ? ', final workspace reward' : ''}',
-                    image: true,
-                    child: CustomPaint(painter: RoomPainter(owned)),
+                InkWell(
+                  onTap: onEdit,
+                  child: SizedBox(
+                    width: 64,
+                    height: 80,
+                    child: AvatarWidget(
+                      avatar: avatar,
+                      size: 64,
+                      animate: true,
+                      reaction: reaction,
+                      event: event,
+                    ),
                   ),
                 ),
-                Positioned(
-                  left: bounds.maxWidth * .13,
-                  bottom: bounds.maxHeight * .075,
-                  child: AvatarWidget(
-                    avatar: avatar,
-                    size: bounds.maxWidth * .42,
-                    animate: true,
-                    reaction: reaction,
-                    event: event,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Your space',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      TextButton(
+                        onPressed: onEdit,
+                        child: Text(
+                          customized ? 'Edit avatar' : 'Create avatar',
+                        ),
+                      ),
+                      if (reaction != AvatarReaction.neutral) Text(caption),
+                    ],
+                  ),
+                ),
+                Semantics(
+                  label:
+                      'Your room${owned.contains('plant') ? ', desk plant' : ''}${owned.contains('workspace') ? ', upgraded workspace' : ''}${owned.contains('reward') ? ', final workspace reward' : ''}',
+                  image: true,
+                  child: SizedBox(
+                    width: 52,
+                    height: 64,
+                    child: CustomPaint(painter: RoomPainter(owned)),
                   ),
                 ),
               ],
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
-          child: Text(
-            caption,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+        )
+      : Card(
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 8, 8, 0),
+                child: Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 12,
+                  children: [
+                    const Text(
+                      'YOUR SPACE',
+                      style: TextStyle(
+                        fontSize: 11,
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: onEdit,
+                      icon: const Icon(Icons.tune, size: 16),
+                      label: Text(customized ? 'Edit avatar' : 'Create avatar'),
+                    ),
+                  ],
+                ),
+              ),
+              AspectRatio(
+                aspectRatio: 1.4,
+                child: LayoutBuilder(
+                  builder: (context, bounds) => Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Semantics(
+                          label:
+                              'Your room${owned.contains('plant') ? ', desk plant' : ''}${owned.contains('workspace') ? ', upgraded workspace' : ''}${owned.contains('reward') ? ', final workspace reward' : ''}',
+                          image: true,
+                          child: CustomPaint(painter: RoomPainter(owned)),
+                        ),
+                      ),
+                      Positioned(
+                        left: bounds.maxWidth * .13,
+                        bottom: bounds.maxHeight * .075,
+                        child: AvatarWidget(
+                          avatar: avatar,
+                          size: bounds.maxWidth * .42,
+                          animate: true,
+                          reaction: reaction,
+                          event: event,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 10, 18, 18),
+                child: Text(
+                  caption,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
-    ),
-  );
+        );
 }
 
 /// Original warm-room illustration. Ownership changes the actual furniture.
@@ -132,7 +187,7 @@ class RoomPainter extends CustomPainter {
       const Rect.fromLTWH(0, 0, 400, 286),
       Paint()
         ..shader = const LinearGradient(
-          colors: [Color(0xffeee2d0), Color(0xffd8c8b4)],
+          colors: [Color(0xff223956), Color(0xff172840)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ).createShader(const Rect.fromLTWH(0, 0, 400, 286)),
@@ -142,15 +197,15 @@ class RoomPainter extends CustomPainter {
       const Offset(400, 205),
       const Offset(400, 286),
       const Offset(0, 286),
-    ], const Color(0xffc9ad8b));
-    line(0, 205, 400, 205, const Color(0xffbca387), 5);
+    ], const Color(0xff30445d));
+    line(0, 205, 400, 205, const Color(0xff405570), 5);
     for (var i = 0; i < 7; i++) {
-      line(i * 80 - 60, 286, i * 60.0, 208, const Color(0xffbda180), 1);
+      line(i * 80 - 60, 286, i * 60.0, 208, const Color(0xff3a506b), 1);
     }
-    line(0, 248, 400, 248, const Color(0xffbda180), 1);
+    line(0, 248, 400, 248, const Color(0xff3a506b), 1);
     // Window with layered distant city and broad sill.
-    box(25, 17, 123, 141, 5, const Color(0xffb6a68e));
-    box(30, 21, 113, 131, 2, const Color(0xffd5e4df));
+    box(25, 17, 123, 141, 5, const Color(0xff47627d));
+    box(30, 21, 113, 131, 2, const Color(0xff183354));
     oval(102, 33, 22, 22, const Color(0xfffaf0c8));
     for (var i = 0; i < 6; i++) {
       box(
@@ -159,20 +214,20 @@ class RoomPainter extends CustomPainter {
         17,
         60 - (i % 3) * 10,
         0,
-        const Color(0xffb9cec6),
+        const Color(0xff2f5276),
       );
     }
-    line(85, 24, 85, 150, const Color(0xfff9f2e6), 5);
-    line(32, 85, 141, 85, const Color(0xfff9f2e6), 4);
-    box(20, 151, 133, 8, 3, const Color(0xfff6ecdc));
+    line(85, 24, 85, 150, const Color(0xff7896ae), 5);
+    line(32, 85, 141, 85, const Color(0xff7896ae), 4);
+    box(20, 151, 133, 8, 3, const Color(0xff8aa4b8));
     poly([
       const Offset(32, 159),
       const Offset(141, 159),
       const Offset(246, 240),
       const Offset(87, 240),
     ], const Color(0x22fff8dc));
-    box(13, 13, 14, 139, 4, const Color(0xffc1b298));
-    box(146, 13, 14, 139, 4, const Color(0xffc1b298));
+    box(13, 13, 14, 139, 4, const Color(0xff344e6c));
+    box(146, 13, 14, 139, 4, const Color(0xff344e6c));
     // Framed abstract print, a small shelf, and books.
     box(292, 22, 62, 74, 2, const Color(0xffa47d58));
     box(297, 27, 52, 64, 0, const Color(0xfff7eddc));

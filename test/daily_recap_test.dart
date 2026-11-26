@@ -36,6 +36,8 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
+    await Scrollable.ensureVisible(tester.element(button), alignment: .5);
+    await tester.pumpAndSettle();
     await tester.tap(button);
     await tester.pumpAndSettle();
   }
@@ -144,7 +146,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(DailyRecapDialog), findsNothing);
     expect(find.textContaining('Not saved:'), findsOneWidget);
-    expect(find.text('0 / 60 minutes · total for today'), findsOneWidget);
+    expect(find.text('0 / 60 min'), findsOneWidget);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 }

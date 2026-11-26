@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import '../design/reality_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -158,7 +159,7 @@ class _PrototypePageState extends State<PrototypePage>
 
   Widget page(List<Widget> children) => ListView(
     key: ValueKey(tab),
-    padding: const EdgeInsets.all(12),
+    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
     children: children,
   );
 
@@ -166,7 +167,7 @@ class _PrototypePageState extends State<PrototypePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MyReality'),
+        title: const Text('myReality'),
         actions: [
           IconButton(
             tooltip: 'Prototype details',
@@ -220,12 +221,11 @@ class _PrototypePageState extends State<PrototypePage>
     final today = data.entry(dateKey(now));
     final ended = data.ended(now);
     return page([
-      _scene(),
+      _welcome(),
+      if (data.started) _weekStrip(),
+      if (data.started) _scene(),
       if (!data.started)
-        panel('Your first three-week Story', [
-          const Text(
-            'Build a version of MyReality your friend can test. Show up on weekdays, earn weekly pay, and watch your workspace change.',
-          ),
+        panel('New Story', [
           const SizedBox(height: 16),
           FilledButton(
             onPressed: busy ? null : _begin,
@@ -233,61 +233,10 @@ class _PrototypePageState extends State<PrototypePage>
           ),
         ])
       else ...[
-        panel(ended ? 'Your Story has ended' : data.title, [
-          Text(
-            '${shortDate(data.startDate)} – ${shortDate(data.lastDate)} · Review ${shortDate(data.finishDate)}',
-          ),
-          const SizedBox(height: 10),
-          LinearProgressIndicator(
-            value:
-                ((dateOnly(now).difference(data.startDate).inHours / 24) / 21)
-                    .clamp(0.0, 1.0),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            ended
-                ? 'Three weeks recorded. Your work remains yours.'
-                : '${data.scheduledDays.where((d) => !d.isBefore(dateOnly(now))).length} scheduled workdays remaining',
-          ),
-          line(
-            'Total recorded effort',
-            '${data.work.fold<int>(0, (sum, entry) => sum + entry.minutes)} minutes',
-          ),
-          TextButton.icon(
-            onPressed: _openTimeline,
-            icon: const Icon(Icons.history),
-            label: const Text('Open recorded timeline'),
-          ),
-          line(
-            'Plan completion so far',
-            '${(data.consistency(now) * 100).round()}%',
-          ),
-          line(
-            'Participation · Showed Up',
-            '${data.participationDays(now)} / ${data.dueDays(now).length} due days',
-          ),
-          line('Full-day streak', '${data.streak(now)} scheduled days'),
-          line(
-            'Targets met',
-            '${data.targetMetDays} / ${data.scheduledDays.length}',
-          ),
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(data.deliverable),
-            subtitle: const Text(
-              'Mark when your real project deliverable is ready',
-            ),
-            value: data.deliverableDone,
-            onChanged: busy
-                ? null
-                : (v) => _change((s) => s.deliverableDone = v!),
-          ),
-          if (data.why.isNotEmpty) Text('Your why: “${data.why}”'),
-        ]),
         if (!ended)
           panel(
             data.scheduled(dateOnly(now))
-                ? 'Today’s coding commitment'
+                ? 'Today’s focus'
                 : now.isBefore(data.startDate)
                 ? 'Your Story starts ${shortDate(data.startDate)}'
                 : 'Planned rest',
@@ -297,20 +246,17 @@ class _PrototypePageState extends State<PrototypePage>
                   data.progressFor(today).state.label,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
+                Text('${today?.minutes ?? 0} / ${data.targetMinutes} min'),
                 Text(
-                  '${today?.minutes ?? 0} / ${data.targetMinutes} minutes · total for today',
+                  '${data.progressFor(today).completionPercent}% complete · Minimum ${data.progressFor(today).showUpMinutes} min',
                 ),
-                Text(
-                  '${data.progressFor(today).completionPercent}% of today’s target · Show Up minimum: ${data.progressFor(today).showUpMinutes} minutes',
+                const SizedBox(height: 12),
+                LinearProgressIndicator(
+                  value: data.progressFor(today).completion,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  today?.legacy == true
-                      ? 'Already completed and paid in the previous version.'
-                      : data.settledDay(now)
-                      ? 'This pay period is settled. Work entries are locked.'
-                      : 'Full completion earns 8 simulated hours. Partial work earns proportional credit.',
-                ),
+                const SizedBox(height: 12),
+                if (today?.legacy == true || data.settledDay(now))
+                  const Text('Paid · Entry locked'),
                 if (today?.reason.isNotEmpty == true)
                   Text('Absence recorded: ${today!.reason}'),
                 const SizedBox(height: 14),
@@ -342,13 +288,57 @@ class _PrototypePageState extends State<PrototypePage>
                   ],
                 ),
               ] else
-                const Text(
-                  'No coding obligation today. Rest does not break your streak or reduce your agreed weekly earning potential.',
-                ),
+                const Text('Rest day'),
             ],
           ),
+        panel(ended ? 'Cycle Complete' : data.title, [
+          Text(
+            '${shortDate(data.startDate)} – ${shortDate(data.lastDate)} · Review ${shortDate(data.finishDate)}',
+          ),
+          const SizedBox(height: 10),
+          LinearProgressIndicator(
+            value:
+                ((dateOnly(now).difference(data.startDate).inHours / 24) / 21)
+                    .clamp(0.0, 1.0),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            ended
+                ? 'Cycle finished'
+                : '${data.scheduledDays.where((d) => !d.isBefore(dateOnly(now))).length} scheduled workdays remaining',
+          ),
+          line(
+            'Recorded effort',
+            '${data.work.fold<int>(0, (sum, entry) => sum + entry.minutes)} minutes',
+          ),
+          TextButton.icon(
+            onPressed: _openTimeline,
+            icon: const Icon(Icons.history),
+            label: const Text('View History'),
+          ),
+          line('Progress', '${(data.consistency(now) * 100).round()}%'),
+          line(
+            'Showed up',
+            '${data.participationDays(now)} / ${data.dueDays(now).length} due days',
+          ),
+          line('Streak', '${data.streak(now)} scheduled days'),
+          line(
+            'Goals met',
+            '${data.targetMetDays} / ${data.scheduledDays.length}',
+          ),
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(data.deliverable),
+
+            value: data.deliverableDone,
+            onChanged: busy
+                ? null
+                : (v) => _change((s) => s.deliverableDone = v!),
+          ),
+          if (data.why.isNotEmpty) Text('Your why: “${data.why}”'),
+        ]),
         if (ended)
-          panel('Your three-week result', [
+          panel('Cycle results', [
             line('Longest streak', '${data.longestStreak} days'),
             line(
               'Net pay earned',
@@ -358,20 +348,110 @@ class _PrototypePageState extends State<PrototypePage>
             Text(
               data.deliverableDone
                   ? 'Deliverable completed.'
-                  : 'Deliverable not yet marked complete. Your recorded effort still counts.',
+                  : 'Deliverable incomplete',
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Your final partial paycheck has been settled. You can keep this Story, celebrate, and take a break.',
-            ),
           ]),
         _workHistory(),
       ],
+      if (!data.started) _scene(),
     ]);
   }
 
+  Widget _weekStrip() {
+    final monday = dateOnly(now).subtract(Duration(days: now.weekday - 1));
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(7, (i) {
+          final date = monday.add(Duration(days: i));
+          final scheduled = data.scheduled(date);
+          final progress = data
+              .progressFor(data.entry(dateKey(date)))
+              .completion;
+          final current = dateKey(date) == dateKey(now);
+          return Semantics(
+            label:
+                '${DateFormat('EEEE MMM d').format(date)}, ${scheduled ? '${(progress * 100).round()} percent recorded' : 'Rest day'}',
+            child: Column(
+              children: [
+                Text(
+                  DateFormat('EEEEE').format(date),
+                  style: const TextStyle(
+                    color: RealityTheme.muted,
+                    fontSize: 11,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        value: scheduled ? progress.clamp(0.0, 1.0) : 0,
+                        strokeWidth: 2,
+                        backgroundColor: RealityTheme.elevated,
+                      ),
+                      Text(
+                        '${date.day}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: current
+                              ? RealityTheme.accent
+                              : RealityTheme.muted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _welcome() {
+    final greeting = now.hour < 12
+        ? 'Good morning'
+        : now.hour < 18
+        ? 'Good afternoon'
+        : 'Good evening';
+    return Padding(
+      padding: const EdgeInsets.only(top: 12, bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            DateFormat('EEEE, MMMM d').format(now).toUpperCase(),
+            style: const TextStyle(
+              color: RealityTheme.muted,
+              fontSize: 11,
+              letterSpacing: 1.7,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '$greeting.',
+            style: const TextStyle(
+              fontSize: 30,
+              height: 1.2,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _workHistory() => panel('Your work, day by day', [
-    if (data.work.isEmpty) const Text('Your first work note will appear here.'),
+    if (data.work.isEmpty) const Text('No work recorded yet'),
     for (final e in [...data.work]..sort((a, b) => b.day.compareTo(a.day)))
       ListTile(
         contentPadding: EdgeInsets.zero,
@@ -412,10 +492,8 @@ class _PrototypePageState extends State<PrototypePage>
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'A new day starts at zero minutes. Your past work stays recorded here.',
-            ),
             const SizedBox(height: 16),
+            _scene(),
             _workHistory(),
           ],
         ),
@@ -424,6 +502,7 @@ class _PrototypePageState extends State<PrototypePage>
   );
 
   Widget _scene() => LifeScene(
+    compact: true,
     avatar: AvatarModel.fromMap(data.avatar),
     customized: data.avatar != null,
     owned: data.owned.toSet(),
@@ -436,24 +515,18 @@ class _PrototypePageState extends State<PrototypePage>
             ? 'A space you earned.'
             : data.owned.contains('workspace')
             ? 'Room to grow.'
-            : 'Small steps. A life taking shape.'),
+            : 'Your space'),
   );
   Widget shop() => page([
-    panel('Make this space yours', [
-      line('Available in Checking', dollars(data.available)),
-      const Text(
-        'One-time visual purchases. Items do not increase pay or complete work.',
-      ),
-    ]),
+    panel('Shop', [line('Available in Checking', dollars(data.available))]),
     for (final p in StoryState.products.entries)
       panel(p.value.$1, [
         Text(dollars(p.value.$2)),
         const SizedBox(height: 8),
-        Text(
-          p.key == 'reward'
-              ? 'At the ending: real deliverable completed, 80% weighted plan completion, and \$400 in Savings.'
-              : 'Appears in your Home scene. Earn it through your recorded work.',
-        ),
+        if (p.key == 'reward')
+          const Text(
+            r'Unlock: cycle complete · deliverable done · 80% progress · $400 saved',
+          ),
         const SizedBox(height: 12),
         FilledButton.tonal(
           onPressed: busy || !data.started || data.owned.contains(p.key)
@@ -471,20 +544,17 @@ class _PrototypePageState extends State<PrototypePage>
         style: Theme.of(context).textTheme.headlineLarge,
       ),
       line('Unpaid essentials', dollars(data.arrears)),
-      line('Available after unpaid essentials', dollars(data.available)),
+      line('Available', dollars(data.available)),
       if (data.arrears > 0 && data.checking > 0)
         OutlinedButton(
           onPressed: busy ? null : () => _change((s) => s.payArrears(now)),
           child: const Text('Pay unpaid essentials'),
         ),
-      if (data.arrears > 0)
-        const Text(
-          'No late fees. Unpaid essentials are capped at one starter week. Savings are never taken automatically.',
-        ),
+      if (data.arrears > 0) const Text('No late fees · Savings protected'),
     ]),
     panel('Payday', [
       if (!data.started)
-        const Text('Create your Story to start earning.')
+        const Text('No active Story')
       else ...[
         line(
           data.ended(now) ? 'Final settlement' : 'Next payday',
@@ -492,28 +562,22 @@ class _PrototypePageState extends State<PrototypePage>
         ),
         line('Pending gross earnings', dollars(data.pendingGross)),
         line('Current game wage', '${dollars(data.wageOn(now))}/hour'),
-        const Text(
-          'Net pay is deposited after each calendar week. Starter essentials cost \$64 per scheduled weekday and are paid after payroll. Partial weeks are prorated.',
-        ),
+        const Text('Weekly pay · Essentials: \$64 per workday'),
         const SizedBox(height: 8),
         Text(
           data.raisedFrom == null
-              ? 'First review: earn 10 full-day equivalents with at least 90% recent weighted plan completion. The \$0.50 raise applies from the next pay period.'
+              ? 'Raise: 10 full-day equivalents + 90% recent progress'
               : 'Raise earned! Your rate increased from ${data.raisedFrom}.',
         ),
       ],
       const SizedBox(height: 8),
-      const Text(
-        'Simulated Ontario 2026 deductions · fixed three-week prototype assumptions',
-      ),
+      const Text('Simulated pay · CAD'),
       const SizedBox(height: 16),
       Text('Pay statements', style: Theme.of(context).textTheme.titleMedium),
       if (data.stubs.isEmpty)
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 12),
-          child: Text(
-            'Your first statement will appear here after payday. Pending earnings are not a deposited paycheck.',
-          ),
+          child: Text('No pay statements yet'),
         ),
       for (final p in data.stubs.reversed)
         ListTile(
@@ -551,8 +615,7 @@ class _PrototypePageState extends State<PrototypePage>
       ),
     ]),
     panel('Recent transactions', [
-      if (data.ledger.isEmpty)
-        const Text('Your first paycheck will appear here.'),
+      if (data.ledger.isEmpty) const Text('No transactions yet'),
       for (final e in data.ledger.reversed.take(30))
         ListTile(
           contentPadding: EdgeInsets.zero,
@@ -568,14 +631,11 @@ class _PrototypePageState extends State<PrototypePage>
         Text('${data.legacyDays.length} legacy check-ins preserved.'),
         if (data.legacyStatement != null)
           line('Legacy gross statement', dollars(data.legacyStatement!)),
-        const Text(
-          'Old earnings were already credited. They are not paid again.',
-        ),
       ]),
     TextButton.icon(
       onPressed: _export,
       icon: const Icon(Icons.copy),
-      label: const Text('Copy prototype backup'),
+      label: const Text('Copy backup'),
     ),
   ]);
 
@@ -740,7 +800,7 @@ class _PrototypePageState extends State<PrototypePage>
     isScrollControlled: true,
     useSafeArea: true,
     showDragHandle: true,
-    backgroundColor: const Color(0xfff4f5f0),
+    backgroundColor: RealityTheme.background,
     constraints: const BoxConstraints(maxWidth: 780),
     builder: (c) => FractionallySizedBox(
       heightFactor: .94,
@@ -864,7 +924,7 @@ class _StorySetupDialogState extends State<StorySetupDialog> {
               onChanged: (v) => setState(() => nextMonday = v),
             ),
             const Text(
-              '21 calendar days · 15 weekdays · weekends off. Final reward: save \$400, complete your deliverable and reach 80% weighted plan completion. Partial work counts proportionally.',
+              '3 weeks · Weekends off\nReward: \$400 saved + deliverable + 80% progress',
             ),
           ],
         ),
@@ -916,7 +976,7 @@ class _WorkDialogState extends State<WorkDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: const Text('What did you move forward?'),
+    title: const Text('Record work'),
     content: SingleChildScrollView(
       child: Form(
         key: form,
@@ -943,13 +1003,9 @@ class _WorkDialogState extends State<WorkDialog> {
               controller: note,
               maxLength: 400,
               maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'What changed? (optional)',
-              ),
+              decoration: const InputDecoration(labelText: 'Note (optional)'),
             ),
-            const Text(
-              'You can add more work today. Credit stops at your daily target; extra time does not buy tomorrow’s completion.',
-            ),
+            const Text('Pay capped at today’s target.'),
           ],
         ),
       ),

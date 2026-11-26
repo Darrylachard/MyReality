@@ -1,3 +1,4 @@
+import '../design/reality_theme.dart';
 import 'package:flutter/material.dart';
 import 'story_state.dart';
 
@@ -58,8 +59,8 @@ class PayStatementSheet extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: const Color(0xffdce3de)),
+                      color: RealityTheme.surface,
+                      border: Border.all(color: RealityTheme.border),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Column(
@@ -70,7 +71,7 @@ class PayStatementSheet extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
                             letterSpacing: 2,
-                            color: Color(0xff183b33),
+                            color: RealityTheme.text,
                             fontSize: 22,
                           ),
                         ),
@@ -81,7 +82,7 @@ class PayStatementSheet extends StatelessWidget {
                         const SizedBox(height: 8),
                         const Text(
                           'Simulated pay · CAD',
-                          style: TextStyle(color: Color(0xff59675f)),
+                          style: TextStyle(color: RealityTheme.muted),
                         ),
                         const Divider(height: 32, thickness: 2),
                         _detail('Period beginning', stub.periodStart),
@@ -96,7 +97,7 @@ class PayStatementSheet extends StatelessWidget {
                           width: double.infinity,
                           padding: const EdgeInsets.all(18),
                           decoration: BoxDecoration(
-                            color: const Color(0xffe8f1eb),
+                            color: RealityTheme.elevated,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
@@ -112,7 +113,7 @@ class PayStatementSheet extends StatelessWidget {
                                 style: const TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xff183b33),
+                                  color: RealityTheme.text,
                                 ),
                               ),
                               const Text('Deposited to Checking'),
@@ -146,7 +147,7 @@ class PayStatementSheet extends StatelessWidget {
                           'Hours are game-equivalent hours earned from your daily target, not actual coding hours.',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Color(0xff59675f),
+                            color: RealityTheme.muted,
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -212,7 +213,7 @@ class PayStatementSheet extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             height: 1.5,
-                            color: Color(0xff59675f),
+                            color: RealityTheme.muted,
                           ),
                         ),
                       ],
@@ -261,7 +262,7 @@ class PayStatementSheet extends StatelessWidget {
     },
     defaultVerticalAlignment: TableCellVerticalAlignment.middle,
     border: const TableBorder(
-      horizontalInside: BorderSide(color: Color(0xffe5e9e6)),
+      horizontalInside: BorderSide(color: RealityTheme.border),
     ),
     children: rows,
   );
@@ -272,7 +273,7 @@ class PayStatementSheet extends StatelessWidget {
     String ytd, {
     bool bold = false,
   }) => TableRow(
-    decoration: bold ? const BoxDecoration(color: Color(0xfff3f6f3)) : null,
+    decoration: bold ? const BoxDecoration(color: RealityTheme.elevated) : null,
     children: [
       for (final cell in [
         (label, TextAlign.left),

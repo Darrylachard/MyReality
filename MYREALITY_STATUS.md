@@ -88,3 +88,21 @@ Core visual foundation and timeline continuity are implemented. Full Pixel_4_XL 
 
 ## Resume instructions
 Read this file, inspect Git status, preserve unrelated/user changes, then choose the first unfinished safe task. Work only on MyReality. Do not reset saved progress, wipe emulator data, falsify work, or purchase items in the user's Story for testing. Use isolated fixtures for demonstrations. Keep this file current after each verified task. Never claim scheduled work ran when the machine/app was unavailable.
+
+## November 9 — midnight visual foundation
+- Added a centralized dark navy theme with soft teal/lavender accents, rounded cards, form fields, buttons, navigation and sheets.
+- Home now has a time-based greeting and date. Onboarding puts Create my Story before the illustration; active Stories place today's commitment before detailed Story statistics. The room retains visible purchase feedback and uses a twilight palette.
+- Avatar editor and pay statements follow the shared palette. Story rules, persistence, models and saved data are unchanged; no dependencies added.
+- All 47 existing tests pass; Home navigation tests now exercise the production dark theme. Analyzer passed and Android debug APK built. Final phone visual review and installation remain pending; this is a first visual foundation, not final design acceptance.
+
+## November 9 — avatar editor and compact dashboard
+- Replaced the active character painter with modular original 2D artwork: adult proportions, shaped eyes/face, tailored clothing and seven hair silhouettes. No external artwork, service or dependency added.
+- Editor has a pinned preview on phones, category controls, hair/color thumbnails, skin/body/face selection, sweater/hoodie/jacket with four colors, glasses and stubble. Existing appearance IDs remain supported; new fields default safely and persist in the existing Story map.
+- Home uses a compact avatar/workspace card, real weekly completion rings, a daily progress bar and shorter labels. Work, pay and purchase rules are unchanged.
+- All 47 tests pass, including updated editor interaction and disk-reopen coverage for new appearance fields. Phone previews rendered and visually inspected with isolated fixture data in build/design-preview. Reproduce on Windows with flutter test tool/redesign_preview_test.dart.
+- Initial extensible illustration set only: full requested hair catalog, eye customization, pants/shoe variations and 3D rotation are not implemented. Physical-device installation, broader large-text QA and user art-direction acceptance remain pending.
+
+## November 9 — copy cleanup
+- Removed repeated onboarding, timeline, Shop and cycle-completion explanations; removed avatar-preview labels. Shortened Account, work-form, recap and empty-state copy.
+- Kept monetary amounts, reward conditions, simulation labels, save errors and locked-entry feedback. No behavior or persistence changes.
+- Analyzer clean. Updated existing tests to match the concise Note and paid-entry labels; Android rebuild requested.

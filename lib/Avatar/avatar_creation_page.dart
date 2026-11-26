@@ -1,6 +1,8 @@
+import '../design/reality_theme.dart';
 import 'package:flutter/material.dart';
 import 'avatar_model.dart';
 import 'avatar_widget.dart';
+import 'portrait_painter.dart';
 
 class AvatarCreatorPage extends StatefulWidget {
   const AvatarCreatorPage({super.key, this.initial});
@@ -10,13 +12,9 @@ class AvatarCreatorPage extends StatefulWidget {
 }
 
 class _AvatarCreatorPageState extends State<AvatarCreatorPage> {
-  late final AvatarModel avatar = AvatarModel(
-    bodyType: widget.initial?.bodyType ?? 'M',
-    skinTone: widget.initial?.skinTone ?? 'light',
-    hairStyle: widget.initial?.hairStyle ?? 'dreads',
-    hairColor: widget.initial?.hairColor ?? 'natural',
-  );
-  static const ink = Color(0xff183b33);
+  int category = 0;
+  late final AvatarModel avatar = AvatarModel.fromMap(widget.initial?.toMap());
+  static const ink = RealityTheme.text;
   static const skins = <String, (String, Color)>{
     'light': ('Light', Color(0xffefd4c2)),
     'tan': ('Tan', Color(0xffc69b72)),
@@ -33,16 +31,32 @@ class _AvatarCreatorPageState extends State<AvatarCreatorPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xfff4f5f0),
+    backgroundColor: RealityTheme.background,
     appBar: AppBar(
       title: Text(
         widget.initial == null ? 'Create your character' : 'Your character',
       ),
-      backgroundColor: const Color(0xfff4f5f0),
+      backgroundColor: RealityTheme.background,
     ),
     body: LayoutBuilder(
       builder: (context, constraints) {
         final wide = constraints.maxWidth >= 760;
+        if (!wide && constraints.maxHeight > 450) {
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: _preview(constraints.maxHeight * .36),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                  child: _options(),
+                ),
+              ),
+            ],
+          );
+        }
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Center(
@@ -88,30 +102,18 @@ class _AvatarCreatorPageState extends State<AvatarCreatorPage> {
 
   Widget _preview(double height) => Container(
     height: height,
+    width: double.infinity,
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(28),
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xffdce9df), Color(0xfff2e7d6)],
+        colors: [RealityTheme.elevated, RealityTheme.surface],
       ),
     ),
     child: Stack(
       alignment: Alignment.center,
       children: [
-        Positioned(
-          top: 18,
-          left: 20,
-          child: Text(
-            'THIS IS YOUR STORY',
-            style: TextStyle(
-              color: ink.withValues(alpha: .65),
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
-              letterSpacing: 2,
-            ),
-          ),
-        ),
         Positioned(
           bottom: 30,
           child: Container(
@@ -127,13 +129,6 @@ class _AvatarCreatorPageState extends State<AvatarCreatorPage> {
           padding: const EdgeInsets.only(top: 20, bottom: 24),
           child: AvatarWidget(avatar: avatar, size: height / 1.35),
         ),
-        const Positioned(
-          bottom: 10,
-          child: Text(
-            'Built by the choices you make.',
-            style: TextStyle(color: ink, fontSize: 12),
-          ),
-        ),
       ],
     ),
   );
@@ -141,71 +136,31 @@ class _AvatarCreatorPageState extends State<AvatarCreatorPage> {
   Widget _options() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'Make it feel like you.',
-        style: TextStyle(
-          fontSize: 27,
-          color: ink,
-          fontWeight: FontWeight.w800,
-          letterSpacing: -.6,
+      SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for (final entry in [
+              'Hair',
+              'Skin & shape',
+              'Clothing',
+              'Details',
+            ].asMap().entries)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(entry.value),
+                  selected: category == entry.key,
+                  onSelected: (_) => setState(() => category = entry.key),
+                ),
+              ),
+          ],
         ),
       ),
-      const SizedBox(height: 8),
-      const Text(
-        'Your appearance is yours to change. Your progress stays with you.',
-        style: TextStyle(color: Color(0xff64766d), height: 1.5),
-      ),
-      _heading('Body', 'Choose your base'),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        children: [
-          _choice(
-            'Masculine',
-            Icons.person_outline,
-            avatar.bodyType == 'M',
-            () => setState(() => avatar.bodyType = 'M'),
-          ),
-          _choice(
-            'Feminine',
-            Icons.person_outline,
-            avatar.bodyType == 'F',
-            () => setState(() => avatar.bodyType = 'F'),
-          ),
-        ],
-      ),
-      _heading('Skin tone', 'Four original palettes'),
-      Wrap(
-        spacing: 12,
-        runSpacing: 10,
-        children: [
-          for (final s in skins.entries)
-            _swatch(
-              s.value.$1,
-              s.value.$2,
-              avatar.skinTone == s.key,
-              () => setState(() => avatar.skinTone = s.key),
-            ),
-        ],
-      ),
-      _heading('Hair', 'Choose your silhouette'),
-      Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: [
-          _hairTile('dreads', 'Locs'),
-          _hairTile('no_hair', 'Clean shave'),
-        ],
-      ),
-      _heading(
-        'Hair color',
-        avatar.hairStyle == 'no_hair'
-            ? 'Choose Locs to show your color'
-            : 'Keep the texture. Change the tone.',
-      ),
-      Opacity(
-        opacity: avatar.hairStyle == 'no_hair' ? .45 : 1,
-        child: Wrap(
+      const SizedBox(height: 20),
+      if (category == 0) ...[
+        _heading('Hair color', ''),
+        Wrap(
           spacing: 12,
           runSpacing: 10,
           children: [
@@ -214,14 +169,118 @@ class _AvatarCreatorPageState extends State<AvatarCreatorPage> {
                 hairNames[h.key]!,
                 h.value,
                 avatar.hairColor == h.key,
-                avatar.hairStyle == 'no_hair'
-                    ? null
-                    : () => setState(() => avatar.hairColor = h.key),
+                () => setState(() => avatar.hairColor = h.key),
               ),
           ],
         ),
-      ),
-      const SizedBox(height: 12),
+        _heading('Hairstyle', ''),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            for (final h in const {
+              'buzz': 'Buzz cut',
+              'short': 'Side swept',
+              'curly': 'Curls',
+              'dreads': 'Locs',
+              'long': 'Long',
+              'ponytail': 'Ponytail',
+              'no_hair': 'Clean shave',
+            }.entries)
+              _hairTile(h.key, h.value),
+          ],
+        ),
+      ],
+      if (category == 1) ...[
+        _heading('Skin tone', ''),
+        Wrap(
+          spacing: 12,
+          runSpacing: 10,
+          children: [
+            for (final s in skins.entries)
+              _swatch(
+                s.value.$1,
+                s.value.$2,
+                avatar.skinTone == s.key,
+                () => setState(() => avatar.skinTone = s.key),
+              ),
+          ],
+        ),
+        _heading('Silhouette', ''),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final b in const {'M': 'Masculine', 'F': 'Feminine'}.entries)
+              ChoiceChip(
+                label: Text(b.value),
+                selected: avatar.bodyType == b.key,
+                onSelected: (_) => setState(() => avatar.bodyType = b.key),
+              ),
+          ],
+        ),
+        _heading('Face shape', ''),
+        Wrap(
+          spacing: 8,
+          children: [
+            for (final f in ['oval', 'defined'])
+              ChoiceChip(
+                label: Text(f == 'oval' ? 'Soft oval' : 'Defined jaw'),
+                selected: avatar.faceShape == f,
+                onSelected: (_) => setState(() => avatar.faceShape = f),
+              ),
+          ],
+        ),
+      ],
+      if (category == 2) ...[
+        _heading('Wardrobe', ''),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final o in const {
+              'sweater': 'Sweater',
+              'hoodie': 'Hoodie',
+              'jacket': 'Jacket',
+            }.entries)
+              ChoiceChip(
+                label: Text(o.value),
+                selected: avatar.outfit == o.key,
+                onSelected: (_) => setState(() => avatar.outfit = o.key),
+              ),
+          ],
+        ),
+        _heading('Fabric color', ''),
+        Wrap(
+          spacing: 12,
+          runSpacing: 10,
+          children: [
+            for (final c in PortraitPainter.clothes.entries)
+              _swatch(
+                c.key,
+                c.value,
+                avatar.outfitColor == c.key,
+                () => setState(() => avatar.outfitColor = c.key),
+              ),
+          ],
+        ),
+      ],
+      if (category == 3) ...[
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Round glasses'),
+          value: avatar.glasses == 'round',
+          onChanged: (v) =>
+              setState(() => avatar.glasses = v ? 'round' : 'none'),
+        ),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Stubble'),
+          value: avatar.facialHair == 'stubble',
+          onChanged: (v) =>
+              setState(() => avatar.facialHair = v ? 'stubble' : 'none'),
+        ),
+      ],
     ],
   );
 
@@ -241,23 +300,10 @@ class _AvatarCreatorPageState extends State<AvatarCreatorPage> {
         const SizedBox(height: 3),
         Text(
           subtitle,
-          style: const TextStyle(fontSize: 12, color: Color(0xff64766d)),
+          style: const TextStyle(fontSize: 12, color: RealityTheme.muted),
         ),
       ],
     ),
-  );
-
-  Widget _choice(
-    String title,
-    IconData icon,
-    bool selected,
-    VoidCallback onTap,
-  ) => ChoiceChip(
-    label: Text(title),
-    avatar: Icon(icon, size: 20),
-    selected: selected,
-    onSelected: (_) => onTap(),
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
   );
 
   Widget _swatch(
@@ -301,8 +347,8 @@ class _AvatarCreatorPageState extends State<AvatarCreatorPage> {
                           Icons.check,
                           size: 19,
                           color: color.computeLuminance() > .45
-                              ? ink
-                              : Colors.white,
+                              ? RealityTheme.background
+                              : RealityTheme.text,
                         )
                       : null,
                 ),
@@ -330,19 +376,24 @@ class _AvatarCreatorPageState extends State<AvatarCreatorPage> {
       skinTone: avatar.skinTone,
       hairStyle: style,
       hairColor: avatar.hairColor,
+      outfit: avatar.outfit,
+      outfitColor: avatar.outfitColor,
+      glasses: avatar.glasses,
+      facialHair: avatar.facialHair,
+      faceShape: avatar.faceShape,
     );
     return Semantics(
       button: true,
       selected: selected,
       label: '$label hairstyle',
       child: SizedBox(
-        width: 132,
+        width: 96,
         child: Material(
-          color: selected ? const Color(0xffdce9df) : Colors.white,
+          color: selected ? RealityTheme.elevated : RealityTheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
             side: BorderSide(
-              color: selected ? ink : const Color(0xffdde3da),
+              color: selected ? ink : RealityTheme.border,
               width: selected ? 2 : 1,
             ),
           ),
@@ -357,6 +408,8 @@ class _AvatarCreatorPageState extends State<AvatarCreatorPage> {
                     child: OverflowBox(
                       alignment: Alignment.topCenter,
                       maxHeight: 260,
+                      minWidth: 200,
+                      maxWidth: 200,
                       child: AvatarWidget(avatar: preview, size: 200),
                     ),
                   ),

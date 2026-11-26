@@ -43,22 +43,20 @@ class DailyRecapDialog extends StatelessWidget {
           Text('${progress.actualMinutes} focused minutes recorded today'),
           Text('${progress.completionPercent}% of today’s target'),
           const SizedBox(height: 16),
-          const Text('Added by this update'),
+          const Text('Earned'),
           Text('+${earnedHours.toStringAsFixed(2)} simulated work hours'),
           Text(
             '+${NumberFormat.currency(symbol: r'$', decimalDigits: 2).format(earnedGross / 100)} pending gross',
           ),
           const SizedBox(height: 8),
-          const Text('Pending earnings become spendable at weekly payday.'),
+
           if (progress.actualMinutes > progress.targetMinutes) ...[
             const SizedBox(height: 8),
-            const Text(
-              'All your minutes are saved. Pay is capped at your target.',
-            ),
+            const Text('Extra time saved · Pay capped at target'),
           ],
           if (note.isNotEmpty) ...[
             const SizedBox(height: 16),
-            const Text('What you moved forward'),
+            const Text('Note'),
             Text(note),
           ],
         ],

@@ -10,6 +10,7 @@ import 'Avatar/avatar_model.dart';
 import 'Avatar/avatar_widget.dart';
 import 'account_progress.dart';
 import 'prototype/prototype_page.dart';
+import 'design/reality_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,39 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'MyReality',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff286755)),
-        useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xfff4f5f0),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xfff4f5f0),
-          foregroundColor: Color(0xff183b33),
-          centerTitle: false,
-          titleTextStyle: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w800,
-            color: Color(0xff183b33),
-            letterSpacing: -.7,
-          ),
-        ),
-        cardTheme: CardThemeData(
-          elevation: 0,
-          color: Colors.white,
-          margin: const EdgeInsets.only(bottom: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-            side: const BorderSide(color: Color(0xffe2e7df)),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: const Color(0xfff0f3ed),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none,
-          ),
-        ),
-      ),
+      theme: RealityTheme.dark,
       home: const PrototypePage(),
     );
   }

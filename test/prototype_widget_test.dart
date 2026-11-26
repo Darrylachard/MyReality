@@ -1,3 +1,4 @@
+import 'package:projects/design/reality_theme.dart';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,17 +40,20 @@ void main() {
     state.record(yesterday, 60, 'Finished the first screen', '');
     await Hive.box<dynamic>('account').put(StoryRepository.key, state.toMap());
     await tester.pumpWidget(
-      MaterialApp(home: PrototypePage(now: () => addDays(yesterday, 1))),
+      MaterialApp(
+        theme: RealityTheme.dark,
+        home: PrototypePage(now: () => addDays(yesterday, 1)),
+      ),
     );
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
-      find.text('Open recorded timeline'),
+      find.text('View History'),
       200,
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
     expect(find.text('60 minutes'), findsOneWidget);
-    await tester.tap(find.text('Open recorded timeline'));
+    await tester.tap(find.text('View History'));
     await tester.pumpAndSettle();
     expect(find.text('Your saved Story timeline'), findsOneWidget);
     expect(find.text('Finished the first screen'), findsWidgets);
@@ -69,7 +73,10 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(
-        MaterialApp(home: PrototypePage(now: () => DateTime(2026, 9, 29))),
+        MaterialApp(
+          theme: RealityTheme.dark,
+          home: PrototypePage(now: () => DateTime(2026, 9, 29)),
+        ),
       );
       await settleUi(tester);
       await tester.tap(find.text('Create my Story'));
@@ -132,7 +139,10 @@ void main() {
       () => Hive.box<dynamic>('account').put(StoryRepository.key, s.toMap()),
     );
     await tester.pumpWidget(
-      MaterialApp(home: PrototypePage(now: () => DateTime(2026, 10, 5))),
+      MaterialApp(
+        theme: RealityTheme.dark,
+        home: PrototypePage(now: () => DateTime(2026, 10, 5)),
+      ),
     );
     await settleUi(tester);
     await tester.tap(find.text('Account'));
